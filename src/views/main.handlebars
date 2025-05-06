@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ title }}</title>
+</head>
+<body>
+ 
+  <form>
+     <h1>Hello from Handlebars!</h1>
+    <label for="inputField">Enter something:</label>
+    <input type="text" id="inputField" name="inputField"  value="אם תרצו אין זו אגדה" required>
+    <button type="submit">Submit</button>
+   </form>
+    
+  <a id="generatedLink" href="#" target="_blank" style="display:none;">Open Generated Image</a>
+  <img id="generatedImage" src="#" alt="Generated Image" style="display:none; max-width:100%; height:auto;" />
+
+  <button id="shareWhatsApp" style="display:none;">Share on WhatsApp</button>
+  <button id="shareFacebook" style="display:none;">Share on Facebook</button>
+  <button id="shareInstagram" style="display:none;">Share on Instagram</button>
+
+  <script>
+  
+    document.querySelector('form').addEventListener('submit', (event) => {
+
+      event.preventDefault(); // Prevent the default form submission
+
+      const inputField = document.querySelector('#inputField').value;
+
+      fetch('http://localhost:3000/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: inputField })
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log('Success:', data);
+          const link = document.querySelector('#generatedLink');
+          const image = document.querySelector('#generatedImage');
+          const shareWhatsApp = document.querySelector('#shareWhatsApp');
+          const shareFacebook = document.querySelector('#shareFacebook');
+          const shareInstagram = document.querySelector('#shareInstagram');
+
+          link.href = data.filePath;
+          link.style.display = 'block';
+          image.src = data.filePath;
+          image.style.display = 'block';
+
+          // Show share buttons
+          shareWhatsApp.style.display = 'inline-block';
+          shareFacebook.style.display = 'inline-block';
+          shareInstagram.style.display = 'inline-block';
+
+          // Add sharing functionality
+          shareWhatsApp.onclick = () => {
+            const url = `https://wa.me/?text=${encodeURIComponent(data.filePath)}`;
+            window.open(url, '_blank');
+          };
+
+          shareFacebook.onclick = () => {
+            const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(data.filePath)}`;
+            window.open(url, '_blank');
+          };
+
+          shareInstagram.onclick = () => {
+            alert('Instagram sharing is not supported directly via URL. You can download the image and upload it manually.');
+          };
+        })
+        .catch(error => console.error('Error:', error));
+    });
+  </script>
+</body>
+</html>
