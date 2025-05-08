@@ -53,3 +53,4 @@ yarn.lock
 static/*.jpg
 static/*.png
 static/*.jpeg
+node_modules
