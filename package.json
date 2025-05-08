@@ -6,7 +6,8 @@
   "scripts": {
    "build": "rimraf dist && npx  tsc",
     "start": "node dist/app.js",
-    "dev": "nodemon --watch src -e ts,tsx --exec \"ts-node src/app.ts\""
+    "dev": "nodemon --watch src -e ts,tsx --exec \"ts-node src/app.ts\"",
+    "postinstall": "chmod +x ./node_modules/.bin/tsc"
   },
   "keywords": [],
   "author": "",
