@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
-   "build": "echo 'skipping tsc for test'",
+   "build": "npx tsc",
     "start": "node dist/app.js",
     "dev": "nodemon --watch src -e ts,tsx --exec \"ts-node src/app.ts\""
     
