@@ -6,8 +6,8 @@
   "scripts": {
   
     "start": "node dist/app.js",
-   "postinstall": "chmod +x node_modules/.bin/tsc",
-  "build": "tsc",
+    "postinstall": "chmod +x node_modules/.bin/tsc",
+    "build": "tsc && xcopy src\\views dist\\views /E /I /Y",
     "dev": "nodemon --watch src --exec ts-node src/app.ts",
     "clean": "rimraf dist"
     

@@ -55,4 +55,4 @@ static/*.png
 static/*.jpeg
 node_modules
 
-.vercel
+
