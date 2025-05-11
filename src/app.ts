@@ -5,13 +5,16 @@ import path from 'path';
 import { createCanvas, loadImage } from 'canvas';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
+import dotenv from 'dotenv';
+
+dotenv.config();
+const port = process.env.PORT || 3000; // Use PORT from .env or default to 3000
+const publicDir = process.env.PUBLIC_DIR || 'public'; // Use PUBLIC_DIR from .env or default to 'public'
+
 
 const app = express();
 
-app.use('/static', express.static(path.join(__dirname, '../public')));
-
-
-const port = process.env.PORT || 3000; // Use environment variable PORT or default to 3000
+app.use('/static', express.static(path.join(__dirname, `../${publicDir}`)));
 
 // Configure Handlebars as the view engine
 app.engine('handlebars', engine({
@@ -85,8 +88,7 @@ app.post('/api/submit', async (req, res) => {
   }
 });
 
-// Serve static files from the "static" directory
-app.use('/static', express.static(path.join(__dirname, 'static')));
+
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);

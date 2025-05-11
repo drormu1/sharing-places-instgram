@@ -10,9 +10,12 @@ const path_1 = __importDefault(require("path"));
 const canvas_1 = require("canvas");
 const fs_1 = __importDefault(require("fs"));
 const uuid_1 = require("uuid");
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const port = process.env.PORT || 3000; // Use PORT from .env or default to 3000
+const publicDir = process.env.PUBLIC_DIR || 'public'; // Use PUBLIC_DIR from .env or default to 'public'
 const app = (0, express_1.default)();
-app.use('/static', express_1.default.static(path_1.default.join(__dirname, '../public')));
-const port = process.env.PORT || 3000; // Use environment variable PORT or default to 3000
+app.use('/static', express_1.default.static(path_1.default.join(__dirname, `../${publicDir}`)));
 // Configure Handlebars as the view engine
 app.engine('handlebars', (0, express_handlebars_1.engine)({
     layoutsDir: path_1.default.join(__dirname, 'views'),
@@ -72,8 +75,6 @@ app.post('/api/submit', async (req, res) => {
         res.status(500).send('Error generating image.');
     }
 });
-// Serve static files from the "static" directory
-app.use('/static', express_1.default.static(path_1.default.join(__dirname, 'static')));
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
 });
