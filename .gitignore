@@ -56,3 +56,4 @@ static/*.jpeg
 node_modules
 
 .env
+.env.prod

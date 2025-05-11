@@ -11,17 +11,26 @@ const canvas_1 = require("canvas");
 const fs_1 = __importDefault(require("fs"));
 const uuid_1 = require("uuid");
 const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
-const port = process.env.PORT || 3000; // Use PORT from .env or default to 3000
-const publicDir = process.env.PUBLIC_DIR || 'public'; // Use PUBLIC_DIR from .env or default to 'public'
+const isProduction = process.env.NODE_ENV === 'production';
+const envFile = isProduction ? '.env.prod' : '.env';
+dotenv_1.default.config({ path: envFile });
+const resolvePath = (productionPath, developmentPath) => {
+    return isProduction ? path_1.default.join(__dirname, productionPath) : path_1.default.join(__dirname, developmentPath);
+};
 const app = (0, express_1.default)();
+// Resolve paths
+const viewsDir = resolvePath('views', '../src/views');
+const publicDir = resolvePath('public', '../public');
+app.set('views', viewsDir);
+app.use('/static', express_1.default.static(publicDir));
+const port = process.env.PORT || 3000; // Use PORT from .env or default to 3000
+console.log('Public Directory:', publicDir);
 app.use('/static', express_1.default.static(path_1.default.join(__dirname, `../${publicDir}`)));
 // Configure Handlebars as the view engine
 app.engine('handlebars', (0, express_handlebars_1.engine)({
     layoutsDir: path_1.default.join(__dirname, 'views'),
 }));
 app.set('view engine', 'handlebars');
-app.set('views', path_1.default.join(__dirname, 'views')); // Assuming your views folder is in the src directory
 // Middleware to parse JSON request bodies
 app.use(express_1.default.json());
 // GET endpoint that renders a Handlebars view
@@ -33,6 +42,7 @@ app.get('/api/data', (req, res) => {
     const data = { message: 'Hello from the GET endpoint!' };
     res.json(data);
 });
+app.set('views', viewsDir);
 app.post('/api/data', (req, res) => {
     const receivedData = req.body;
     console.log('Received data:', receivedData);
@@ -46,7 +56,7 @@ app.post('/api/submit', async (req, res) => {
     }
     try {
         // Load the background image
-        const backgroundPath = path_1.default.join(__dirname, '../public', 'images', 'background.jpg');
+        const backgroundPath = path_1.default.join(publicDir, 'images', 'background.jpg');
         console.log('Background image path:', backgroundPath);
         const image = await (0, canvas_1.loadImage)(backgroundPath);
         // Create a canvas with the same dimensions as the background image
@@ -60,14 +70,17 @@ app.post('/api/submit', async (req, res) => {
         ctx.fillText(inputField, 50, 50);
         // Generate a unique filename using GUID
         const uniqueFilename = `${(0, uuid_1.v4)()}.jpg`;
-        const outputPath = path_1.default.join(__dirname, '../public', 'postcards', uniqueFilename);
+        const outputPath = path_1.default.join(publicDir, 'postcards', uniqueFilename);
         console.log('Output image path:', outputPath);
         // Save the resulting image
         const out = fs_1.default.createWriteStream(outputPath);
         const stream = canvas.createJPEGStream();
         stream.pipe(out);
         out.on('finish', () => {
-            res.json({ message: 'Image generated successfully!', filePath: `http://${req.hostname}:${port}/static/postcards/${uniqueFilename}` });
+            res.json({
+                message: 'Image generated successfully!',
+                filePath: `http://${req.hostname}:${port}/static/postcards/${uniqueFilename}`,
+            });
         });
     }
     catch (error) {

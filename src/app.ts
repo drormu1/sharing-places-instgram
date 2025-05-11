@@ -7,12 +7,28 @@ import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import dotenv from 'dotenv';
 
-dotenv.config();
-const port = process.env.PORT || 3000; // Use PORT from .env or default to 3000
-const publicDir = process.env.PUBLIC_DIR || 'public'; // Use PUBLIC_DIR from .env or default to 'public'
+const isProduction = process.env.NODE_ENV === 'production';
+const envFile = isProduction  ? '.env.prod' : '.env';
+dotenv.config({ path: envFile });
 
-
+const resolvePath = (productionPath: string, developmentPath: string) => {
+  return isProduction ? path.join(__dirname, productionPath) : path.join(__dirname, developmentPath);
+};
 const app = express();
+
+// Resolve paths
+const viewsDir = resolvePath('views', '../src/views');
+const publicDir = resolvePath('public', '../public');
+
+app.set('views', viewsDir);
+app.use('/static', express.static(publicDir));
+
+const port = process.env.PORT || 3000; // Use PORT from .env or default to 3000
+
+
+
+console.log('Public Directory:', publicDir);
+
 
 app.use('/static', express.static(path.join(__dirname, `../${publicDir}`)));
 
@@ -21,7 +37,7 @@ app.engine('handlebars', engine({
   layoutsDir: path.join(__dirname, 'views'),
 }));
 app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname, 'views')); // Assuming your views folder is in the src directory
+
 
 // Middleware to parse JSON request bodies
 app.use(express.json());
@@ -36,6 +52,9 @@ app.get('/api/data', (req: Request, res: Response) => {
   const data = { message: 'Hello from the GET endpoint!' };
   res.json(data);
 });
+
+app.set('views', viewsDir);
+
 
 app.post('/api/data', (req: Request, res: Response) => {
   const receivedData = req.body;
@@ -53,8 +72,7 @@ app.post('/api/submit', async (req, res) => {
  
   try {
     // Load the background image
-    const backgroundPath = path.join(__dirname, '../public', 'images', 'background.jpg');
-
+    const backgroundPath = path.join(publicDir, 'images', 'background.jpg');
     console.log('Background image path:', backgroundPath);
     const image = await loadImage(backgroundPath);
 
@@ -72,22 +90,25 @@ app.post('/api/submit', async (req, res) => {
 
     // Generate a unique filename using GUID
     const uniqueFilename = `${uuidv4()}.jpg`;
-    const outputPath = path.join(__dirname, '../public','postcards', uniqueFilename);
+    const outputPath = path.join(publicDir, 'postcards', uniqueFilename);
     console.log('Output image path:', outputPath);
+
     // Save the resulting image
     const out = fs.createWriteStream(outputPath);
     const stream = canvas.createJPEGStream();
     stream.pipe(out);
 
     out.on('finish', () => {
-      res.json({ message: 'Image generated successfully!', filePath: `http://${req.hostname}:${port}/static/postcards/${uniqueFilename}` });
+      res.json({
+        message: 'Image generated successfully!',
+        filePath: `http://${req.hostname}:${port}/static/postcards/${uniqueFilename}`,
+      });
     });
   } catch (error) {
     console.error('Error generating image:', error);
     res.status(500).send('Error generating image.');
   }
 });
-
 
 
 app.listen(port, () => {
