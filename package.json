@@ -6,9 +6,10 @@
   "scripts": {
   
     "start": "node dist/app.js",
-     "postinstall": "chmod u+x ./node_modules/typescript/bin/tsc",
-    "build": "npx --no-install typescript/bin/tsc",
-    "dev": "nodemon --watch src -e ts,tsx --exec \"ts-node src/app.ts\""
+   "postinstall": "chmod +x node_modules/.bin/tsc",
+  "build": "tsc",
+    "dev": "nodemon --watch src --exec ts-node src/app.ts",
+    "clean": "rimraf dist"
     
   },
   "keywords": [],

@@ -11,6 +11,7 @@ const canvas_1 = require("canvas");
 const fs_1 = __importDefault(require("fs"));
 const uuid_1 = require("uuid");
 const app = (0, express_1.default)();
+app.use('/static', express_1.default.static(path_1.default.join(__dirname, '../public')));
 const port = process.env.PORT || 3000; // Use environment variable PORT or default to 3000
 // Configure Handlebars as the view engine
 app.engine('handlebars', (0, express_handlebars_1.engine)({
@@ -42,7 +43,8 @@ app.post('/api/submit', async (req, res) => {
     }
     try {
         // Load the background image
-        const backgroundPath = path_1.default.join(__dirname, 'background', 'background.jpg');
+        const backgroundPath = path_1.default.join(__dirname, '../public', 'images', 'background.jpg');
+        console.log('Background image path:', backgroundPath);
         const image = await (0, canvas_1.loadImage)(backgroundPath);
         // Create a canvas with the same dimensions as the background image
         const canvas = (0, canvas_1.createCanvas)(image.width, image.height);
@@ -55,13 +57,14 @@ app.post('/api/submit', async (req, res) => {
         ctx.fillText(inputField, 50, 50);
         // Generate a unique filename using GUID
         const uniqueFilename = `${(0, uuid_1.v4)()}.jpg`;
-        const outputPath = path_1.default.join(__dirname, 'static', uniqueFilename);
+        const outputPath = path_1.default.join(__dirname, '../public', 'postcards', uniqueFilename);
+        console.log('Output image path:', outputPath);
         // Save the resulting image
         const out = fs_1.default.createWriteStream(outputPath);
         const stream = canvas.createJPEGStream();
         stream.pipe(out);
         out.on('finish', () => {
-            res.json({ message: 'Image generated successfully!', filePath: `http://${req.hostname}:${port}/static/${uniqueFilename}` });
+            res.json({ message: 'Image generated successfully!', filePath: `http://${req.hostname}:${port}/static/postcards/${uniqueFilename}` });
         });
     }
     catch (error) {
