@@ -4,6 +4,7 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
+    "heroku-postbuild": "npm run build",
     "start": "node dist/app.js",
     "postinstall": "chmod +x node_modules/.bin/tsc",
     "build": "tsc && copyfiles -u 2 src/views/**/* dist/views && copyfiles -u 1 public/**/* dist/public",
